@@ -94,7 +94,8 @@ static inline double dvdt(
     return (
         -G_LEAK * (v - E_LEAK)
         - G_NA * m * m * m * h * (v - E_NA)
-        - G_K * n * n * n * n * (v - E_K) + i_ext
+        - G_K * n * n * n * n * (v - E_K)
+        + i_ext
     ) / C;
 }
 
