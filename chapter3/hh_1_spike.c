@@ -1,5 +1,28 @@
-// gnuplot> plot [first:last] '*.dat' using horizontal:vertical title 'name' with line
-// example: plot [0:1000] 'hh.dat' using 1:2 title 'v' with line
+/*
+gnuplot>set multiplot layout 4,1 spacing 0.01;
+set lmargin 1;
+set rmargin 1;
+set tmargin 0.3;
+set bmargin 1.3;
+set size ratio 0.22;
+set format x "";
+set xtics 0,5,25 font ",6" scale 0.5;
+set format y "";
+set ytics ("-65" -65, "0" 0) font ",6" scale 0.5;
+set ylabel "V[mV]" offset 0, 0;
+set object 1 rect from 0, graph 0 to 1, graph 1 fc lt 1 fillstyle solid 0.2 noborder;
+plot [-5: 25] [-80:80] 'hh_1_spike.dat' using 1:2 notitle with line lw 1;
+set ytics ("0" 0, "" 0.5, "1" 1) font ",6" scale 0.5;
+set ylabel "m" offset -2, 0;
+plot [-5: 25] [0:1] 'hh_1_spike.dat' using 1:3 notitle with line lw 1;
+set ylabel "h" offset -2, 0;
+plot [-5: 25] [0:1] 'hh_1_spike.dat' using 1:4 notitle with line lw 1;
+set format x "%g";
+set xtics 0,5,25 offset 0, 0.5 font ",6" scale 0.5;
+set ylabel "n" offset -2, 0;
+set label "1" at 1, graph 0 offset 0,-0.5 center font ",6";
+plot [-5: 25] [0:1] 'hh_1_spike.dat' using 1:5 notitle with line lw 1;
+*/
 
 #include <stdio.h>
 #include <math.h>
@@ -105,11 +128,13 @@ int main(void) {
     double h = h0(v);
     double n = n0(v);
 
-    double i_ext = 9.0; // micro A / cm^2
-
     for (int32_t nt = 0; nt < NT; nt++) {
         double t = DT * nt;
-        printf("%f %f %f %f %f\n", t, v, m, h, n);
+
+        // 流入する電流を１秒のみに
+        double i_ext = (100 <= t && t < 101) ? 9.0 : 0.0;
+
+        printf("%f %f %f %f %f \n", t - 100, v, m, h, n);
 
         double dmdt1 = dmdt(v, m);
         double dhdt1 = dhdt(v, h);

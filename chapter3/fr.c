@@ -1,5 +1,4 @@
-// gnuplot> plot [first:last] '*.dat' using horizontal:vertical title 'name' with line
-// example: plot [0:1000] 'hh.dat' using 1:2 title 'v' with line
+//plot 'fr.dat' notitle with line lw 1;
 
 #include <stdio.h>
 #include <math.h>
@@ -16,8 +15,8 @@
 #define E_K ( -12.0 + ( E_REST ) ) //mV
 
 #define DT ( 0.01 ) // 10 micro s
-#define T ( 1000 ) // 1000 ms; unused
-#define NT ( 100000 ) // T / DT
+#define T ( 10000 ) // 1000 ms; unused
+#define NT ( 1000000 ) // T / DT
 
 // m, h, nを決める速度変数
 static inline double alpha_m(const double v) {
@@ -100,58 +99,66 @@ static inline double dvdt(
 }
 
 int main(void) {
-    double v = E_REST;
-    double m = m0(v);
-    double h = h0(v);
-    double n = n0(v);
+    // 流入する電流ごとに発火頻度を計算
+    for (double i_ext = 6.0; i_ext < 20; i_ext += 0.1) {
+        double v = E_REST;
+        double m = m0(v);
+        double h = h0(v);
+        double n = n0(v);
 
-    double i_ext = 9.0; // micro A / cm^2
+        uint32_t ns = 0;
+        double v_old = E_REST;
 
-    for (int32_t nt = 0; nt < NT; nt++) {
-        double t = DT * nt;
-        printf("%f %f %f %f %f\n", t, v, m, h, n);
+        for (int32_t nt = 0; nt < NT; nt++) {
+            v_old = v;
 
-        double dmdt1 = dmdt(v, m);
-        double dhdt1 = dhdt(v, h);
-        double dndt1 = dndt(v, n);
-        double dvdt1 = dvdt(v, m, h, n, i_ext);
+            double dmdt1 = dmdt(v, m);
+            double dhdt1 = dhdt(v, h);
+            double dndt1 = dndt(v, n);
+            double dvdt1 = dvdt(v, m, h, n, i_ext);
 
-        double dmdt2 = dmdt(v + 0.5 * DT * dvdt1, m + 0.5 * DT * dmdt1);
-        double dhdt2 = dhdt(v + 0.5 * DT * dvdt1, h + 0.5 * DT * dhdt1);
-        double dndt2 = dndt(v + 0.5 * DT * dvdt1, n + 0.5 * DT * dndt1);
-        double dvdt2 = dvdt(
-            v + 0.5 * DT * dvdt1,
-            m + 0.5 * DT * dmdt1,
-            h + 0.5 * DT * dhdt1,
-            n + 0.5 * DT * dndt1,
-            i_ext
-        );
+            double dmdt2 = dmdt(v + 0.5 * DT * dvdt1, m + 0.5 * DT * dmdt1);
+            double dhdt2 = dhdt(v + 0.5 * DT * dvdt1, h + 0.5 * DT * dhdt1);
+            double dndt2 = dndt(v + 0.5 * DT * dvdt1, n + 0.5 * DT * dndt1);
+            double dvdt2 = dvdt(
+                v + 0.5 * DT * dvdt1,
+                m + 0.5 * DT * dmdt1,
+                h + 0.5 * DT * dhdt1,
+                n + 0.5 * DT * dndt1,
+                i_ext
+            );
 
-        double dmdt3 = dmdt(v + 0.5 * DT * dvdt2, m + 0.5 * DT * dmdt2);
-        double dhdt3 = dhdt(v + 0.5 * DT * dvdt2, h + 0.5 * DT * dhdt2);
-        double dndt3 = dndt(v + 0.5 * DT * dvdt2, n + 0.5 * DT * dndt2);
-        double dvdt3 = dvdt(
-            v + 0.5 * DT * dvdt2,
-            m + 0.5 * DT * dmdt2,
-            h + 0.5 * DT * dhdt2,
-            n + 0.5 * DT * dndt2,
-            i_ext
-        );
+            double dmdt3 = dmdt(v + 0.5 * DT * dvdt2, m + 0.5 * DT * dmdt2);
+            double dhdt3 = dhdt(v + 0.5 * DT * dvdt2, h + 0.5 * DT * dhdt2);
+            double dndt3 = dndt(v + 0.5 * DT * dvdt2, n + 0.5 * DT * dndt2);
+            double dvdt3 = dvdt(
+                v + 0.5 * DT * dvdt2,
+                m + 0.5 * DT * dmdt2,
+                h + 0.5 * DT * dhdt2,
+                n + 0.5 * DT * dndt2,
+                i_ext
+            );
 
-        double dmdt4 = dmdt(v + DT * dvdt3, m + DT * dmdt3);
-        double dhdt4 = dhdt(v + DT * dvdt3, h + DT * dhdt3);
-        double dndt4 = dndt(v + DT * dvdt3, n + DT * dndt3);
-        double dvdt4 = dvdt(
-            v + DT * dvdt3,
-            m + DT * dmdt3,
-            h + DT * dhdt3,
-            n + DT * dndt3,
-            i_ext
-        );
+            double dmdt4 = dmdt(v + DT * dvdt3, m + DT * dmdt3);
+            double dhdt4 = dhdt(v + DT * dvdt3, h + DT * dhdt3);
+            double dndt4 = dndt(v + DT * dvdt3, n + DT * dndt3);
+            double dvdt4 = dvdt(
+                v + DT * dvdt3,
+                m + DT * dmdt3,
+                h + DT * dhdt3,
+                n + DT * dndt3,
+                i_ext
+            );
 
-        m += DT * (dmdt1 + 2 * dmdt2 + 2 * dmdt3 + dmdt4) / 6.0;
-        h += DT * (dhdt1 + 2 * dhdt2 + 2 * dhdt3 + dhdt4) / 6.0;
-        n += DT * (dndt1 + 2 * dndt2 + 2 * dndt3 + dndt4) / 6.0;
-        v += DT * (dvdt1 + 2 * dvdt2 + 2 * dvdt3 + dvdt4) / 6.0;
+            m += DT * (dmdt1 + 2 * dmdt2 + 2 * dmdt3 + dmdt4) / 6.0;
+            h += DT * (dhdt1 + 2 * dhdt2 + 2 * dhdt3 + dhdt4) / 6.0;
+            n += DT * (dndt1 + 2 * dndt2 + 2 * dndt3 + dndt4) / 6.0;
+            v += DT * (dvdt1 + 2 * dvdt2 + 2 * dvdt3 + dvdt4) / 6.0;
+
+            // 閾値を下から上に跨いだら、発火数を追加
+            if (v > 0.0 && v_old < 0.0) { ns++; }
+        }
+
+        if (1000.0 * ns / T >= 1) { printf("%f %f\n", i_ext, 1000.0 * ns / T); }
     }
 }
