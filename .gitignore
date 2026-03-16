@@ -1,2 +1,5 @@
 *.png
-*/images
+images/
+*.json
+misc/
+.cache/
