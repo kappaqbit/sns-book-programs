@@ -1,5 +1,4 @@
 *.png
 images/
 *.json
-misc/
 .cache/
