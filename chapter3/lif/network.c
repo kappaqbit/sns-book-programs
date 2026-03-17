@@ -18,7 +18,6 @@
 //#define W ( 2.0 ) //connection weight
 #define W ( -2.0 ) //connection weight
 
-
 int main (void) {
     //float v[N] = { V_REST, V_REST - 15.0 };
     float v[N] = { V_REST, V_REST - 1.0 };
