@@ -5,7 +5,7 @@ LDLIBS = -lm
 SFMTDIR = ../misc/SFMT-src-1.5.1
 SFMTFLAGS = -I$(SFMTDIR) -DSFMT_MEXP=19937
 
-TARGETS = random
+TARGETS = random psth
 MISC_OBJS = SFMT.o timer.o
 
 .PHONY: all run clean distclean
